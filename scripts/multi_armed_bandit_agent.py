@@ -1,23 +1,11 @@
 """
-Multi-armed bandit
+Multi-armed bandit agent
 
 Sam Connolly 2019
 """
 import numpy as np
 import matplotlib.pyplot as plt
-
-
-class MultiArmedBandit:
-    def __init__(self, n_arms: int):
-        self.n_arms = n_arms
-        self.chances = np.random.random(3)
-
-    def pull_arm(self, n: int):
-        p = np.random.random()
-        if p < self.chances[n]:
-            return True
-        else:
-            return False
+from environments.multi_armed_bandit import MultiArmedBandit
 
 
 class Learn:
