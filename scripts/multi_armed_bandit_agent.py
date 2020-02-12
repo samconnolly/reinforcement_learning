@@ -5,6 +5,7 @@ Sam Connolly 2019
 """
 import numpy as np
 import matplotlib.pyplot as plt
+
 from environments.multi_armed_bandit import MultiArmedBandit
 
 
