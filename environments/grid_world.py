@@ -5,7 +5,7 @@ Sam Connolly 2019
 """
 import numpy as np
 import matplotlib.pyplot as plt
-from typing import Tuple
+from typing import Tuple, Union
 
 
 class GridWorld:
@@ -276,3 +276,44 @@ class GridWorld:
             axes.set_title("Player loses")
         else:
             axes.set_title("Still playing")
+
+class Policy:
+    def __init__(self, policy: Union[str, dict], gridworld: GridWorld = None):
+        if type(policy) == dict:
+            self.policy = policy
+        elif type(policy) == str and gridworld is not None:
+            if policy == "uniform":
+                self.policy = {tuple(p): (tuple(gridworld.actions[tuple(p)]),
+                                          tuple([1 / len(gridworld.actions[tuple(p)]) for i in
+                                                 range(len(gridworld.actions[tuple(p)]))]))
+                               for p in np.indices(gridworld.grid_map.shape).reshape(2, -1).T}
+            if policy == "set":
+                # up if available, otherwise right
+                self.policy = {tuple(p): (tuple(gridworld.actions[tuple(p)]),
+                                          tuple([1 if a == "U" else 0 for a in gridworld.actions[tuple(p)]])
+                                          if "U" in gridworld.actions[tuple(p)]
+                                          else tuple([1 if a == "R" else 0 for a in gridworld.actions[tuple(p)]]))
+                               for p in np.indices(gridworld.grid_map.shape).reshape(2, -1).T}
+            if policy == "random":
+                # random
+                self.policy = {tuple(p): (tuple(gridworld.actions[tuple(p)]),
+                                          tuple([np.random.random() for _ in gridworld.actions[tuple(p)]]))
+                               for p in np.indices(gridworld.grid_map.shape).reshape(2, -1).T}
+                for k in self.policy.keys():
+                    if len(self.policy[k][0]) > 0:
+                        self.policy[k] = (self.policy[k][0], tuple(np.array(self.policy[k][1]) / np.sum(self.policy[k][1])))
+            if policy == "random_choice":
+                # random
+                self.policy = {tuple(p): (tuple(gridworld.actions[tuple(p)]),
+                                          tuple(np.eye(len(gridworld.actions[tuple(p)]))[
+                                                    np.random.choice(len(gridworld.actions[tuple(p)]), 1)]))
+                               if len(gridworld.actions[tuple(p)]) > 0 else ((), ())
+                               for p in np.indices(gridworld.grid_map.shape).reshape(2, -1).T}
+
+
+    def action(self, state):
+        actions, probs = self.policy[state]
+        cum_probs = np.cumsum(probs)
+        index = np.where(np.random.random() < cum_probs)[0][0]  # pick based on probs
+        action = actions[index]
+        return action

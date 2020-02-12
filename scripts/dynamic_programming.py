@@ -6,19 +6,8 @@ Sam Connolly 2019
 import numpy as np
 import matplotlib.pyplot as plt
 import warnings
-from environments.grid_world import GridWorld
+from environments.grid_world import GridWorld, Policy
 
-
-class Policy:
-    def __init__(self, policy):
-        self.policy = policy
-
-    def action(self, state):
-        actions, probs = self.policy[state]
-        cum_probs = np.cumsum(probs)
-        index = np.where(np.random.random() < cum_probs)[0][0]  # pick based on probs
-        action = actions[index]
-        return action
 
 
 class Agent:
@@ -139,26 +128,13 @@ if __name__ == '__main__':
     # gridworld.plot_state()
 
     # even chance of all available options
-    uniform_policy = Policy({
-        tuple(p): (tuple(gridworld.actions[tuple(p)]),
-                   tuple([1 / len(gridworld.actions[tuple(p)]) for i in range(len(gridworld.actions[tuple(p)]))]))
-        for p in np.indices(gridworld.grid_map.shape).reshape(2, -1).T})
+    uniform_policy = Policy("uniform", gridworld)
 
     # up if available, otherwise right
-    set_policy = Policy({
-        tuple(p): (tuple(gridworld.actions[tuple(p)]),
-                   tuple([1 if a == "U" else 0 for a in gridworld.actions[tuple(p)]])
-                   if "U" in gridworld.actions[tuple(p)]
-                   else tuple([1 if a == "R" else 0 for a in gridworld.actions[tuple(p)]]))
-        for p in np.indices(gridworld.grid_map.shape).reshape(2, -1).T
-    })
+    set_policy = Policy("set", gridworld)
 
     # random
-    random_policy = Policy({
-        tuple(p): (tuple(gridworld.actions[tuple(p)]),
-                   tuple([np.random.random() for a in gridworld.actions[tuple(p)]]))
-        for p in np.indices(gridworld.grid_map.shape).reshape(2, -1).T
-    })
+    random_policy = Policy("random", gridworld)
 
     max_runs = 100
     max_same = 3
